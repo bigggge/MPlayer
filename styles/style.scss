@@ -1,0 +1,92 @@
+//colors
+$black_20: rgba(0, 0, 0, .2);
+$black_10: rgba(0, 0, 0, .1);
+$black_666: #666;
+$black_999: #999;
+$bar_bg: lightgrey;
+$bar_played: yellowgreen;
+
+.player {
+  margin: 0 auto;
+  padding: 10px;
+  width: 380px;
+  height: 100px;
+  box-shadow: 0 2px 10px 0 $black_20;
+  border-radius: 5px;
+}
+
+.player-cover {
+  float: left;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  box-shadow: 0 2px 2px 0 $black_10;
+  img {
+    width: 100%;
+  }
+}
+
+.player-main {
+  height: 100px;
+  margin-left: 110px;
+  position: relative;
+
+  .player-info {
+    .player-title {
+      font-size: 14px;
+      color: $black_666;
+    }
+    .player-author {
+      font-size: 12px;
+      color: $black_999;
+      &.error {
+        color: pink;
+      }
+    }
+  }
+  .player-controller {
+    padding: 10px 0;
+  }
+
+  .player-time {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 20px;
+
+    .time-bar-wrapper {
+      margin-right: 85px;
+      height: 20px;
+      .total-time-bar {
+        width: 100%;
+        height: 3px;
+        background-color: $bar_bg;
+        cursor: pointer;
+        /*垂直居中,设置成absolute则margin无效*/
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .played-time-bar {
+        position: absolute;
+        height: 3px;
+        width: 1%;
+        background-color: $bar_played;
+        cursor: pointer;
+      }
+    }
+    .time-text {
+      text-align: right;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 85px;
+      height: 20px;
+      line-height: 20px;
+      font-size: 12px;
+      color: $black_666;
+    }
+  }
+}
+
