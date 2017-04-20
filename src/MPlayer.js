@@ -28,16 +28,22 @@
             <span class="togglePlay icon-play2"></span>
         </div>
 
-        <div class="player-time">
-            <div class="time-bar-wrapper">
+        <div class="player-bottom-bar">
+            <div class="time-bar">
                 <div class="total-time-bar"><span class="played-time-bar"></span></div>
             </div>
             <span class="time-text">
                 <span class="played-time">00:00</span> / <span class="total-time">3:00</span>
             </span>
+            <span class="player-volume-icon icon-volume-medium">
+                
+            </span>
+            <div class="player-volume-bar">
+                <div class="total-volume-bar"><span class="current-volume-bar"></span></div>
+            </div>
         </div>
     </div>
-</div>`
+</div>`;
 
     function MPlayer(options) {
         this.options = options;
@@ -46,22 +52,29 @@
 
     MPlayer.prototype.init = function () {
 
+        const options = this.options;
         this.el = document.getElementById(options.el);
-        let options = this.options;
-        let src = options.src;
-        let autoPlay = options.autoplay;
-        let cover = options.cover;
+        const src = options.src;
+        const autoPlay = options.autoplay;
+        const cover = options.cover;
         this.el.innerHTML = audioHtml;
 
         // DOM
-        let el = this.el;
+        const el = this.el;
         this.togglePlayEl = el.getElementsByClassName('togglePlay')[0];
         this.titleEl = el.getElementsByClassName('player-title')[0];
         this.authorEl = el.getElementsByClassName('player-author')[0];
+        // time bar
+        this.timeBarEl = el.getElementsByClassName('time-bar')[0];
         this.totalTimeEl = el.getElementsByClassName('total-time')[0];
         this.playedTimeEl = el.getElementsByClassName('played-time')[0];
         this.playerCoverEl = el.getElementsByClassName('player-cover-img')[0];
-        this.persentPlayed = el.getElementsByClassName('played-time-bar')[0];
+        this.persentPlayedEl = el.getElementsByClassName('played-time-bar')[0];
+        // volume
+        this.playerVolumeEl = el.getElementsByClassName('player-volume-icon')[0];
+        this.volumeBarEl = el.getElementsByClassName('player-volume-bar')[0];
+        this.totalVolumeEl = el.getElementsByClassName('total-volume-bar')[0];
+        this.currentVolumeEl = el.getElementsByClassName('current-volume-bar')[0];
 
         // song title
         this.titleEl.innerHTML = options.title;
@@ -91,6 +104,44 @@
             this.authorEl.innerHTML = '加载失败 T^T';
         });
 
+
+        // progress bar
+        this.timeBarEl.addEventListener('click', (e) => {
+            const event = e || window.event;
+            const timeBarWidth = this.timeBarEl.clientWidth;
+            const rect = this.timeBarEl.getBoundingClientRect();
+            const viewLeft = rect.left;
+            const percentage = ((event.clientX - viewLeft ) / timeBarWidth).toFixed(2);
+
+            this.persentPlayedEl.style.width = percentage * 100 + '%';
+            this.audio.currentTime = percentage * this.audio.duration;
+            this.playedTimeEl.innerHTML = secondToTime(this.audio.currentTime);
+        });
+
+        // volume
+        this.playerVolumeEl.addEventListener('click', (e) => {
+            if (this.audio.muted) {
+                this.audio.muted = false;
+                this.playerVolumeEl.className = 'player-volume-icon icon-volume-medium';
+                this.currentVolumeEl.style.height = '100%';
+            } else {
+                this.audio.muted = true;
+                this.playerVolumeEl.className = 'player-volume-icon icon-volume-mute2';
+                this.currentVolumeEl.style.height = '0%';
+            }
+        });
+
+        this.volumeBarEl.addEventListener('click', (e) => {
+            const event = e || window.event;
+            const volumeBarHeight = this.volumeBarEl.clientHeight;
+            const rect = this.volumeBarEl.getBoundingClientRect();
+            const viewTop = rect.top;
+            const percentage = 1 - ((event.clientY - viewTop ) / volumeBarHeight).toFixed(2);
+
+            this.currentVolumeEl.style.height = percentage * 100 + '%';
+            this.audio.volume = percentage;
+        });
+
         // auto play
         if (autoPlay) {
             this.toggle();
@@ -106,9 +157,10 @@
             this.togglePlayEl.classList.remove('icon-play2');
             this.audio.play();
 
+            this.currentVolumeEl.style.height = this.audio.volume * 100 + '%';
             this.playedTime = setInterval(() => {
                 this.playedTimeEl.innerHTML = secondToTime(this.audio.currentTime);
-                this.persentPlayed.style.width = (this.audio.currentTime / this.audio.duration) * 100 + '%'
+                this.persentPlayedEl.style.width = (this.audio.currentTime / this.audio.duration) * 100 + '%'
             }, 100);
 
         } else {
