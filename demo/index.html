@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>player</title>
+    <link href="../build/css/style.css" rel="stylesheet">
+    <link href="../build/css/font.css" rel="stylesheet">
+</head>
+
+<body>
+<div id="app"></div>
+<script src="../src/MPlayer.js"></script>
+
+<script>
+
+    var options = {
+        el: 'app',
+        autoplay: false,
+        music: [
+            {
+                title: 'Letter Song',
+                author: 'ヲタみん',
+                src: 'http://7xq3d5.com1.z0.glb.clouddn.com/%E3%83%B2%E3%82%BF%E3%81%BF%E3%82%93%20-%20Letter%20Song.mp3',
+                cover: 'http://pic.xiami.net/images/album/img75/87975/6615037721361503772.jpg'
+            },
+            {
+                title: '光るなら',
+                author: 'Goose house',
+                src: 'http://7xq3d5.com1.z0.glb.clouddn.com/Goose%20house%20-%20%E5%85%89%E3%82%8B%E3%81%AA%E3%82%89.mp3',
+                cover: 'http://p3.music.126.net/R3ndkz84v-nDZKVCBjXArw==/7834020348181215.jpg?param=130y130',
+            },
+            {
+                title: '君だったら',
+                author: 'HAPPY BIRTHDAY',
+                src: 'http://7xq3d5.com1.z0.glb.clouddn.com/HAPPY%20BIRTHDAY%20-%20%E5%90%9B%E3%81%9F%E3%82%99%E3%81%A3%E3%81%9F%E3%82%89.mp3',
+                cover: 'http://pic.xiami.net/images/album/img99/21699/216991364021699.jpg',
+            },
+            {
+                title: 'あの頃~ジンジンバオヂュオニー~',
+                author: 'whiteeeen',
+                src: 'http://7xq3d5.com1.z0.glb.clouddn.com/whiteeeen%20-%20%E3%81%82%E3%81%AE%E9%A0%83~%E3%82%B7%E3%82%99%E3%83%B3%E3%82%B7%E3%82%99%E3%83%B3%E3%83%8F%E3%82%99%E3%82%AA%E3%83%81%E3%82%99%E3%83%A5%E3%82%AA%E3%83%8B%E3%83%BC~.mp3',
+                cover: 'http://pic.xiami.net/images/album/img8/1726043308/21002132941444187076.jpeg',
+            },
+            {
+                title: '童话镇',
+                author: '陈一发儿',
+                src: 'http://7xq3d5.com1.z0.glb.clouddn.com/%E9%99%88%E4%B8%80%E5%8F%91%E5%84%BF%20-%20%E7%AB%A5%E8%AF%9D%E9%95%87.mp3',
+                cover: 'http://pic.xiami.net/images/album/img57/129/580987cd1634f_6451457_1477019597.png',
+            },
+            {
+                title: '成都',
+                author: '赵雷',
+                src: 'http://7xq3d5.com1.z0.glb.clouddn.com/%E8%B5%B5%E9%9B%B7%20-%20%E6%88%90%E9%83%BD.mp3',
+                cover: 'http://pic.xiami.net/images/album/img87/181/585a3226db20e_9076087_1482306086.jpg',
+            }
+        ],
+
+    };
+
+    var player = new MPlayer(options);
+
+</script>
+</body>
+</html>
