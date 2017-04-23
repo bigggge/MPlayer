@@ -28,8 +28,11 @@ $bottom-bar-height: 20px;
   float: left;
   width: 100px;
   height: 100px;
+  border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 2px 2px 0 $black_10;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  animation: rotate 12s linear infinite;
+  animation-play-state: paused;
 
   img {
     width: 100%;
@@ -156,9 +159,6 @@ $bottom-bar-height: 20px;
   font-size: 12px;
   max-height: 120px;
   overflow: auto;
-  //opacity: 1;
-  //transition: all .3s;
-  //-webkit-transition: all .3s;
   color: $black_999;
   .music-item {
     position: relative;
@@ -172,15 +172,21 @@ $bottom-bar-height: 20px;
     &:first-child {
       margin-top: 20px;
     }
+    &.active {
+      color: #59d8cf;
+    }
   }
   &::-webkit-scrollbar {
     display: none
   }
-  //&.hidden {
-  //  display: none;
-  //}
-  //&.visually-hidden {
-  //  opacity: 0;
-  //}
+}
+
+@keyframes rotate {
+  from {
+    -webkit-transform: rotate(0deg)
+  }
+  to {
+    -webkit-transform: rotate(360deg)
+  }
 }
 

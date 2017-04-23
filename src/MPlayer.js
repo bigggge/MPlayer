@@ -14,9 +14,7 @@
     var audioHtml = `
         <div class="player">
             <div class="player-cover">
-                <div class="player-cover-wrapper">
-                    <img class="player-cover-img">
-                </div>
+                <img class="player-cover-img">
             </div>
 
             <div class="player-main">
@@ -35,7 +33,7 @@
                         <div class="total-time-bar"><span class="played-time-bar"></span></div>
                     </div>
                     <span class="time-text">
-                <span class="played-time">00:00</span> / <span class="total-time">3:00</span>
+                <span class="played-time">00:00</span>/<span class="total-time">3:00</span>
             </span>
                     <span class="player-volume-icon icon-volume-medium"></span>
                     <div class="player-volume-bar">
@@ -60,7 +58,6 @@
         const autoPlay = options.autoplay;
 
         this.musicList = options.music;
-        this.currentMusic = this.musicList[0];
 
         this.el.innerHTML = audioHtml;
 
@@ -74,7 +71,8 @@
         this.timeBarEl = el.getElementsByClassName('time-bar')[0];
         this.totalTimeEl = el.getElementsByClassName('total-time')[0];
         this.playedTimeEl = el.getElementsByClassName('played-time')[0];
-        this.playerCoverEl = el.getElementsByClassName('player-cover-img')[0];
+        this.playerCoverEl = el.getElementsByClassName('player-cover')[0];
+        this.playerCoverImgEl = el.getElementsByClassName('player-cover-img')[0];
         this.persentPlayedEl = el.getElementsByClassName('played-time-bar')[0];
         // volume
         this.playerVolumeEl = el.getElementsByClassName('player-volume-icon')[0];
@@ -84,13 +82,22 @@
         // music list
         this.playerListEl = el.getElementsByClassName('player-list')[0];
         this.musicListEl = el.getElementsByClassName('music-list')[0];
+        this.musicItemEls = el.getElementsByClassName('music-item');
+
+        if (!Array.isArray(this.musicList) || this.musicList.length === 0) {
+            this.loadingEl.classList.add('error');
+            this.loadingEl.innerHTML = '参数错误 T^T';
+            return;
+        }
 
         // generate music list
+        this.currentMusic = this.musicList[0];
         let html = '';
         for (let i = 0; i < this.musicList.length; i++) {
             html += `<li class="music-item">${this.musicList[i].title} <span class="music-author">${this.musicList[i].author}</span></li>`;
         }
         this.musicListEl.innerHTML = html;
+        this.musicItemEls[0].className = 'music-item active';
 
         // set music
         this.audio = document.createElement('audio');
@@ -108,12 +115,12 @@
      */
     MPlayer.prototype.toggle = function (forcePlay) {
         if (forcePlay || this.audio.paused) {
-            this.togglePlayEl.className = 'togglePlay icon-pause';
             this.audio.play();
+            this.togglePlayEl.className = 'togglePlay icon-pause';
             this.currentVolumeEl.style.height = this.audio.volume * 100 + '%';
         } else {
-            this.togglePlayEl.className = 'togglePlay icon-play2';
             this.audio.pause();
+            this.togglePlayEl.className = 'togglePlay icon-play2';
         }
     };
 
@@ -125,7 +132,7 @@
         // song
         this.audio.src = this.currentMusic.src;
         // song cover
-        this.playerCoverEl.src = this.currentMusic.cover;
+        this.playerCoverImgEl.src = this.currentMusic.cover;
         // song title
         this.titleEl.innerHTML = this.currentMusic.title;
         // song author
@@ -150,9 +157,20 @@
             this.loadingEl.innerHTML = ''
         });
 
+        this.audio.addEventListener('playing', () => {
+            this.loadingEl.innerHTML = '';
+            this.playerCoverEl.style.animationPlayState = "running";
+        });
+
+        this.audio.addEventListener('pause', () => {
+            this.loadingEl.innerHTML = '';
+            this.playerCoverEl.style.animationPlayState = "paused";
+        });
+
         // music end
         this.audio.addEventListener('ended', () => {
             this.togglePlayEl.className = 'togglePlay icon-play2';
+            // this.playerCoverEl.style.animationPlayState = "paused";
         });
 
         // time update
@@ -165,6 +183,7 @@
         this.audio.addEventListener('error', () => {
             this.loadingEl.classList.add('error');
             this.loadingEl.innerHTML = '加载失败 T^T';
+            this.playerCoverEl.style.animationPlayState = "paused";
         });
 
         // progress bar
@@ -207,26 +226,19 @@
         // show or hide music list
         this.playerCoverEl.addEventListener('click', () => {
             this.playerListEl.style.display = (this.playerListEl.style.display === 'block' ? 'none' : 'block')
-            // let classList = this.playerListEl.classList;
-            // if (classList.contains('hidden')) {
-            //     classList.remove('hidden');
-            //     requestAnimationFrame(function () {
-            //         classList.remove('visually-hidden');
-            //     });
-            // } else {
-            //     classList.add('visually-hidden');
-            //     this.playerListEl.addEventListener('transitionend', (e) => {
-            //         classList.add('hidden');
-            //     });
-            // }
         });
 
         // music list
         this.musicListEl.addEventListener('click', (e) => {
+            for (let i = 0; i < this.musicItemEls.length; i++) {
+                this.musicItemEls[i].classList.remove('active')
+            }
             if (e.target && (e.target.nodeName === "LI")) {
                 const node = e.target;
                 const index = [].indexOf.call(node.parentNode.children, node);
                 this.currentMusic = this.musicList[index];
+                node.className = 'music-item active';
+
                 this.setMusic(true);
             }
         });
@@ -239,8 +251,8 @@
      * @return {string}
      */
     function secondToTime(second) {
-        let min = (second / 60) | 0;
-        let sec = (second % 60) | 0;
+        let min = parseInt(second / 60);
+        let sec = parseInt(second % 60);
         let add0min = min < 10 ? ('0' + min) : min
         let add0sec = sec < 10 ? ('0' + sec) : sec
         return `${add0min}:${add0sec}`;
