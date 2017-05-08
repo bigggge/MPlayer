@@ -11,7 +11,7 @@
 !function () {
 
     // template
-    var audioHtml = `
+    let audioHtml = `
         <div class="player">
             <div class="player-cover">
                 <img class="player-cover-img">
@@ -25,7 +25,8 @@
                 </div>
 
                 <div class="player-controller">
-                    <span class="togglePlay icon-play2"></span>
+                    <span class="player-toggle icon-play2"></span>
+                    <span class="player-lrc"></span>
                 </div>
 
                 <div class="player-bottom-bar">
@@ -56,14 +57,14 @@
         const options = this.options;
         this.el = document.getElementById(options.el);
         const autoPlay = options.autoplay;
-
         this.musicList = options.music;
 
         this.el.innerHTML = audioHtml;
 
         // DOM
         const el = this.el;
-        this.togglePlayEl = el.getElementsByClassName('togglePlay')[0];
+        this.toggleEl = el.getElementsByClassName('player-toggle')[0];
+        this.lrcEl = el.getElementsByClassName('player-lrc')[0];
         this.titleEl = el.getElementsByClassName('player-title')[0];
         this.authorEl = el.getElementsByClassName('player-author')[0];
         this.loadingEl = el.getElementsByClassName('player-loading')[0];
@@ -90,8 +91,10 @@
             return;
         }
 
-        // generate music list
         this.currentMusic = this.musicList[0];
+        // lrc
+        this.parseLrc(this.currentMusic.lrc);
+        // generate music list
         let html = '';
         for (let i = 0; i < this.musicList.length; i++) {
             html += `<li class="music-item">${this.musicList[i].title} <span class="music-author">${this.musicList[i].author}</span></li>`;
@@ -116,11 +119,11 @@
     MPlayer.prototype.toggle = function (forcePlay) {
         if (forcePlay || this.audio.paused) {
             this.audio.play();
-            this.togglePlayEl.className = 'togglePlay icon-pause';
+            this.toggleEl.className = 'player-toggle icon-pause';
             this.currentVolumeEl.style.height = this.audio.volume * 100 + '%';
         } else {
             this.audio.pause();
-            this.togglePlayEl.className = 'togglePlay icon-play2';
+            this.toggleEl.className = 'player-toggle icon-play2';
         }
     };
 
@@ -129,6 +132,8 @@
      */
     MPlayer.prototype.setMusic = function (forcePlay) {
         this.loadingEl.innerHTML = 'loading...';
+        // lrc
+        this.parseLrc(this.currentMusic.lrc);
         // song
         this.audio.src = this.currentMusic.src;
         // song cover
@@ -143,13 +148,13 @@
     MPlayer.prototype._addEventListener = function () {
 
         // play or pause
-        this.togglePlayEl.addEventListener('click', () => {
+        this.toggleEl.addEventListener('click', () => {
             this.toggle();
         });
 
         // total time
         this.audio.addEventListener('durationchange', () => {
-            this.totalTimeEl.innerHTML = secondToTime(this.audio.duration);
+            this.totalTimeEl.innerHTML = _secondToTime(this.audio.duration);
         });
 
         // can play
@@ -169,14 +174,14 @@
 
         // music end
         this.audio.addEventListener('ended', () => {
-            this.togglePlayEl.className = 'togglePlay icon-play2';
-            // this.playerCoverEl.style.animationPlayState = "paused";
+            this.toggleEl.className = 'player-toggle icon-play2';
         });
 
         // time update
         this.audio.addEventListener('timeupdate', () => {
-            this.playedTimeEl.innerHTML = secondToTime(this.audio.currentTime);
-            this.persentPlayedEl.style.width = (this.audio.currentTime / this.audio.duration) * 100 + '%'
+            this.playedTimeEl.innerHTML = _secondToTime(this.audio.currentTime);
+            this.persentPlayedEl.style.width = (this.audio.currentTime / this.audio.duration) * 100 + '%';
+            this.lrcEl.innerHTML = getLrc(this.currentLrc, this.audio.currentTime);
         });
 
         // error listener
@@ -196,7 +201,7 @@
 
             this.persentPlayedEl.style.width = percentage * 100 + '%';
             this.audio.currentTime = percentage * this.audio.duration;
-            this.playedTimeEl.innerHTML = secondToTime(this.audio.currentTime);
+            this.playedTimeEl.innerHTML = _secondToTime(this.audio.currentTime);
         });
 
         // volume
@@ -250,12 +255,93 @@
      * @param second
      * @return {string}
      */
-    function secondToTime(second) {
+    function _secondToTime(second) {
         let min = parseInt(second / 60);
         let sec = parseInt(second % 60);
         let add0min = min < 10 ? ('0' + min) : min
         let add0sec = sec < 10 ? ('0' + sec) : sec
         return `${add0min}:${add0sec}`;
+    }
+
+    MPlayer.prototype.parseLrc = function (lrc) {
+        if (!lrc) {
+            this.currentLrc = [[0, '']]
+        }
+        // if lrc is url
+        else if (lrc.indexOf('http') === 0) {
+            if (window.fetch) {
+                console.log('fetch...')
+                fetch(lrc)
+                    .then((response) => {
+                        return response.text();
+                    })
+                    .then((text) => {
+                        this.currentLrc = getParsedLrcArr(text)
+                    })
+                    .catch(function (err) {
+                        console.error(err)
+                    });
+            } else {
+                let request = new XMLHttpRequest();
+                request.open('GET', lrc, true);
+
+                request.onload = () => {
+                    if (request.status >= 200 && request.status < 400) {
+                        let data = request.responseText;
+                        this.currentLrc = getParsedLrcArr(data)
+                    }
+                };
+                request.onerror = (err) => {
+                    console.log(err)
+                };
+                request.send();
+            }
+        }
+        // if lrc is text
+        else {
+            this.currentLrc = getParsedLrcArr(lrc)
+        }
+    };
+
+    /**
+     * 修改自 https://github.com/DIYgod/APlayer/blob/master/src/APlayer.js#L621-L644
+     */
+    function getParsedLrcArr(text) {
+        let lyric = text.split('\n');
+        if (lyric.length === 1) {
+            lyric = text.split(' ')
+        }
+        let lrc = [];
+        for (let i = 0, lyricLen = lyric.length; i < lyricLen; i++) {
+            // match lrc time
+            const lrcTimes = lyric[i].match(/\[(\d{2}):(\d{2})\.(\d{2,3})]/g);
+            // match lrc text
+            const lrcText = lyric[i].replace(/\[(\d{2}):(\d{2})\.(\d{2,3})]/g, '').replace(/^\s+|\s+$/g, '');
+            if (lrcTimes !== null) {
+                // handle multiple time tag
+                const timeLen = lrcTimes.length;
+                for (let j = 0; j < timeLen; j++) {
+                    const oneTime = /\[(\d{2}):(\d{2})\.(\d{2,3})]/.exec(lrcTimes[j]);
+                    const lrcTime = (oneTime[1]) * 60 + parseInt(oneTime[2]) + parseInt(oneTime[3]) / ((oneTime[3] + '').length === 2 ? 100 : 1000);
+                    lrc.push([lrcTime, lrcText]);
+                }
+            }
+        }
+        // sort by time
+        lrc.sort((a, b) => a[0] - b[0]);
+        return lrc;
+    }
+
+    function getLrc(lrc, time) {
+        if (!lrc)return '';
+        if (time < lrc[0][0]) return lrc[0][1];
+        let i = 0;
+        for (let l = lrc.length; i < l; i++) {
+            if (time >= lrc[i][0] && (!(lrc[i + 1]) || time <= lrc[i + 1][0])) {
+                break;
+            }
+        }
+        return lrc[i][1]
     }
 
     window.MPlayer = MPlayer

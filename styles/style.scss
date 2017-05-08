@@ -65,7 +65,19 @@ $bottom-bar-height: 20px;
     }
   }
   .player-controller {
-    padding: 10px 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px 0;
+    .player-toggle {
+
+    }
+    .player-lrc {
+      font-size: 12px;
+      color: $black_999;
+      margin: 0 5px;
+      overflow: hidden;
+    }
   }
 
   .player-bottom-bar {
