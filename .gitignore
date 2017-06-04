@@ -62,5 +62,6 @@ typings/
 build
 .idea
 fonts
+.DS_Store
 
 

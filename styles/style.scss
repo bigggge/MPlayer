@@ -7,7 +7,7 @@ $bar_bg: lightgrey;
 $bar_played: yellowgreen;
 $volume_width: 20px;
 $time_width: 85px;
-$player-width: 380px;
+$player-width: 395px;
 $player-height: 100px;
 $bottom-bar-height: 20px;
 
@@ -65,10 +65,10 @@ $bottom-bar-height: 20px;
     }
   }
   .player-controller {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 20px 0;
+    //display: flex;
+    //justify-content: flex-start;
+    //align-items: center;
+    padding-top: 10px;
     .player-toggle {
 
     }
@@ -77,6 +77,10 @@ $bottom-bar-height: 20px;
       color: $black_999;
       margin: 0 5px;
       overflow: hidden;
+      vertical-align: top;
+    }
+    .player-spectrum {
+      margin-left: 15px;
     }
   }
 
