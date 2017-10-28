@@ -4,6 +4,8 @@ a little music player
 
 ![](http://7xq3d5.com1.z0.glb.clouddn.com/mplayer.png?imageView2/2/w/380)
 
+[DEMO](https://bigggge.github.io/MPlayer/)
+
 ### Build
 
 ```
